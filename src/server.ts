@@ -4,6 +4,7 @@ import { env } from "node:process";
 import request from "request";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+import { verifyLoggedIn } from "./verify";
 
 const PORT = env["PORT"] || 3000;
 
@@ -16,19 +17,9 @@ app.get("/login", (req, res) => {
   });
 });
 
-app.get("/home", (req, res) => {
-  const v = jwt.verify(
-    req.cookies.auth,
-    env["JWT_PRIVATE_KEY"],
-    (err, decoded) => {
-      if (err) {
-        res.redirect("/login");
-      } else {
-        console.log(decoded);
-        res.send(`Logged in as ${decoded.username}`);
-      }
-    }
-  );
+app.get("/home", verifyLoggedIn, (req, res) => {
+  const { username } = req.cookies;
+  res.send(`Logged in as ${username}`);
 });
 
 app.get("/authorize", (req, res) => {
